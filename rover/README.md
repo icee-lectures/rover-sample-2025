@@ -94,6 +94,9 @@ systemctl --user enable ros-discovery.service
 systemctl --user enable rover.service
 systemctl --user start ros-discovery.service
 systemctl --user start rover.service
+
+# systemdのユーザーモードが未ログインでも自動起動する設定
+loginctl enable-linger $(whoami)
 ```
 
 サービスを削除する場合：
