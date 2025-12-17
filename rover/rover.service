@@ -1,6 +1,6 @@
 [Unit]
 Description=ROS2 nodes for this rover
-After=network.target
+After=network.target ros-discovery.service
 
 [Service]
 Type=simple
