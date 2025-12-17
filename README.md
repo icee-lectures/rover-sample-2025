@@ -50,54 +50,17 @@ rover-sample-2025/
 ### リモート制御側（PC）
 - Ubuntu 24.04（物理マシン推奨）
 - ROS 2 Jazzy
-- ゲームコントローラー（USBまたはBluetooth接続）
+- ゲームコントローラー
 
 ## セットアップ
 
 ### 1. ローバー側のセットアップ
 
-詳細は [rover/README.md](rover/README.md) を参照してください。
-
-```bash
-# 依存パッケージのインストール
-sudo apt update
-sudo apt install ros-jazzy-desktop ros-jazzy-rmw-fastrtps-cpp \
-                 ros-jazzy-cv-bridge ros-jazzy-image-transport \
-                 ros-jazzy-aruco-msgs libopencv-dev
-
-# ワークスペースのビルド
-cd rover/rover_ws
-colcon build
-source install/setup.bash
-
-# 環境変数の設定（必要に応じて編集）
-cd ..
-vim rosenv.sh
-
-# systemdサービスの登録（オプション）
-./install_discovery_service.sh
-./install_rover_service.sh
-systemctl --user enable ros-discovery.service rover.service
-systemctl --user start ros-discovery.service rover.service
-```
+[rover/README.md](rover/README.md) を参照してください。
 
 ### 2. リモート制御側のセットアップ
 
-詳細は [rover_remote/README.md](rover_remote/README.md) を参照してください。
-
-```bash
-# 起動スクリプトに実行権限を付与
-cd rover_remote
-chmod +x start_ROS.sh start_gamepad.sh
-
-# 環境変数の設定（必要に応じて編集）
-vim rosenv.sh
-
-# ワークスペースのビルド
-cd remote_ws
-colcon build
-source install/setup.bash
-```
+[rover_remote/README.md](rover_remote/README.md) を参照してください。
 
 ## 使用方法
 
@@ -115,12 +78,7 @@ cd rover
 ### リモート制御側の起動
 
 ```bash
-# ゲームコントローラーをPCに接続
-
-# ROS環境の起動
-./start_ROS.sh
-
-# ゲームパッド制御の起動（別ターミナル）
+# ゲームパッド制御の起動
 ./start_gamepad.sh
 ```
 
@@ -132,8 +90,6 @@ cd rover
 - `/imu/data_raw`: IMUデータ
 - `/imu/mag`: 磁気センサーデータ
 - `/voltage`: バッテリー電圧
-- `/joint_states`: ジョイント状態
-- `/vel_raw`: 生の速度データ
 
 ### ローバーが購読するトピック
 - `/cmd_vel`: 速度指令（Twist）
@@ -152,8 +108,8 @@ sudo usermod -aG video $USER
 ```
 
 ### ゲームコントローラーが認識されない
-- 仮想環境（VM）ではUSBデバイスの認識に問題がある場合があります
-- 物理マシンでUbuntuを実行してください
+- 仮想環境（VM）ではUSBデバイスの認識に問題がある場合がありますので、物理マシンでUbuntuを実行してください
+- 環境変数を `SDL_JOYSTICK_DEVICE=/dev/input/js0` のように指定し、ゲームコントローラの場所を明示してみてください
 
 ### ネットワーク通信ができない
 - `rosenv.sh`の`ROS_DOMAIN_ID`が一致しているか確認
