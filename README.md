@@ -30,7 +30,7 @@ rover-sample-2025/
 │   ├── ros-discovery.sh              # Discovery Server起動スクリプト
 │   └── *.service                     # systemdサービスファイル
 │
-└── rover_remote/       # リモート制御端末（PC）のROSノード
+└── remote/       # リモート制御端末（PC）のROSノード
     ├── remote_ws/      # ROS 2 ワークスペース
     │   └── src/
     │       └── gamepad/              # ゲームパッド制御パッケージ
@@ -62,7 +62,7 @@ rover-sample-2025/
 
 ### 2. リモート制御側のセットアップ
 
-[rover_remote/README.md](rover_remote/README.md) を参照してください。
+[remote/README.md](remote/README.md) を参照してください。
 
 ## 使用方法
 

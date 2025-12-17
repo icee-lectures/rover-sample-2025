@@ -39,7 +39,7 @@ ROS 2 ワークスペース
 入手直後はスクリプトに実行権限が付いていない場合があります。最初に権限を付与してください。
 
 ```bash
-cd rover_remote
+cd remote
 chmod +x start_ROS.sh start_gamepad.sh
 ```
 
