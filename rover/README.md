@@ -42,6 +42,15 @@ ROS 2 ワークスペース
 
 ## 使用準備
 
+### 0. シェルスクリプトの実行権限付与
+
+入手直後はスクリプトに実行権限が付いていない場合があります。最初に権限を付与してください。
+
+```bash
+cd rover
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh
+```
+
 ### 1. 依存パッケージのインストール
 
 ```bash
