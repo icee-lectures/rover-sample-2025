@@ -1,0 +1,12 @@
+[Unit]
+Description=Ros Discovery Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=__SCRIPT_DIR__/ros-discovery.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

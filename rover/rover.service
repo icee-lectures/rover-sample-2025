@@ -1,0 +1,12 @@
+[Unit]
+Description=ROS2 nodes for this rover
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=__SCRIPT_DIR__/rover.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
