@@ -6,6 +6,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 import pygame
 import sys
+import os
 
 
 class GamepadPublisher(Node):
@@ -16,6 +17,7 @@ class GamepadPublisher(Node):
         self.publisher = self.create_publisher(Joy, 'joy', 10)
         
         # Pygameの初期化
+        os.environ["SDL_JOYSTICK_DEVICE"] = "/dev/input/js0"
         pygame.init()
         pygame.joystick.init()
         
