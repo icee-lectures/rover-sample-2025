@@ -5,7 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS_DIR="$SCRIPT_DIR/rover_ws"
 
 # 環境変数の設定
-source "$SCRIPT_DIR/rosenv.sh"
+if [ -f "$SCRIPT_DIR/rosenv.sh" ]; then
+    source $SCRIPT_DIR/rosenv.sh
+else
+    source $SCRIPT_DIR/rosenv_default.sh
+fi
 
 # Discovery Server が立ち上がるまで少し待つ
 sleep 2
