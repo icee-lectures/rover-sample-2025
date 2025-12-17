@@ -48,7 +48,7 @@ ROS 2 ワークスペース
 
 ```bash
 cd rover
-chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh start_ROS.sh
 ```
 
 ### 1. 依存パッケージのインストール
@@ -61,12 +61,9 @@ sudo apt install ros-jazzy-desktop
 # Fast-DDS Discovery Server
 sudo apt install ros-jazzy-rmw-fastrtps-cpp
 
-# カメラとOpenCV関連
-sudo apt install ros-jazzy-cv-bridge ros-jazzy-image-transport
-sudo apt install libopencv-dev
-
-# ArUco関連
-sudo apt install ros-jazzy-aruco-msgs
+# カメラ関連
+sudo apt install ros-jazzy-cv-bridge ros-jazzy-image-transport ros-jazzy-aruco-msgs \
+                 libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
 
 ### 2. ワークスペースのビルド
@@ -78,7 +75,13 @@ colcon build
 
 ### 3. 環境変数の設定
 
-`rosenv.sh` に以下の設定があります：
+`rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください 
+
+```bash
+cp rosenv_default.sh rosenv.sh
+```
+
+以下の設定があります：
 - `ROS_DOMAIN_ID`: ROSドメインID
 - 遠隔制御に使う環境変数（しない場合 or 分からない場合はコメントアウトすること）
     - `RMW_IMPLEMENTATION`: DDSの選択
@@ -167,23 +170,3 @@ journalctl --user -u rover.service -f
 systemctl --user stop rover.service
 systemctl --user stop ros-discovery.service
 ```
-
-### ノードの確認
-
-```bash
-source rosenv.sh
-source /opt/ros/jazzy/setup.bash
-ros2 node list
-ros2 topic list
-```
-
-### トピックのテスト
-
-Roverを動かすテスト：
-```bash
-source rosenv.sh
-source /opt/ros/jazzy/setup.bash
-ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}"
-```
-
-
