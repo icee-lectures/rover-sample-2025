@@ -63,7 +63,8 @@ rover-sample-2025/
 sudo apt update
 sudo apt install ros-jazzy-desktop ros-jazzy-rmw-fastrtps-cpp \
                  ros-jazzy-cv-bridge ros-jazzy-image-transport \
-                 ros-jazzy-aruco-msgs libopencv-dev libgstreamer1.0-dev
+                 ros-jazzy-aruco-msgs libopencv-dev \
+                 libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
 # ワークスペースのビルド
 cd rover/rover_ws
