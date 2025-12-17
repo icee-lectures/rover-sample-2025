@@ -17,7 +17,7 @@
 
 ## システム構成
 
-```
+```txt
 rover-sample-2025/
 ├── rover/              # ローバー本体（Raspberry Pi）のROSノード
 │   ├── rover_ws/       # ROS 2 ワークスペース
@@ -42,12 +42,14 @@ rover-sample-2025/
 ## 前提条件
 
 ### ローバー側（Raspberry Pi 5）
+
 - Ubuntu 24.04
 - ROS 2 Jazzy
 - Yahboom ROS Control Board v3
 - カメラモジュール（/dev/video0）
 
 ### リモート制御側（PC）
+
 - Ubuntu 24.04（物理マシン推奨）
 - ROS 2 Jazzy
 - ゲームコントローラー
@@ -85,6 +87,7 @@ cd rover
 ## 主なROSトピック
 
 ### ローバーが配信するトピック
+
 - `camera/image_raw/compressed`: カメラ映像（JPEG圧縮）
 - `camera/aruco_debug/compressed`: ArUco検出結果の描画付き映像
 - `/imu/data_raw`: IMUデータ
@@ -92,6 +95,7 @@ cd rover
 - `/voltage`: バッテリー電圧
 
 ### ローバーが購読するトピック
+
 - `/cmd_vel`: 速度指令（Twist）
 - `/RGBLight`: LEDライト制御
 - `/Buzzer`: ブザー制御
@@ -99,6 +103,7 @@ cd rover
 ## トラブルシューティング
 
 ### カメラが認識されない
+
 ```bash
 # カメラデバイスの確認
 v4l2-ctl -d /dev/video0 --all
@@ -108,10 +113,12 @@ sudo usermod -aG video $USER
 ```
 
 ### ゲームコントローラーが認識されない
+
 - 仮想環境（VM）ではUSBデバイスの認識に問題がある場合がありますので、物理マシンでUbuntuを実行してください
 - 環境変数を `SDL_JOYSTICK_DEVICE=/dev/input/js0` のように指定し、ゲームコントローラの場所を明示してみてください
 
 ### ネットワーク通信ができない
+
 - `rosenv.sh`の`ROS_DOMAIN_ID`が一致しているか確認
 - 同じサブネット外から制御する場合は`ROS_DISCOVERY_SERVER`の設定を確認
 - ファイアウォール設定を確認

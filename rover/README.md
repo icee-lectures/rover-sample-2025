@@ -4,8 +4,8 @@
 
 - Ubuntu24.04, ROS2 Jazzy で動作検証を行っています
 - 以下ハードウェアを使用します
-    - Raspberry Pi 5
-    - Yahboom ROS control Board v3
+  - Raspberry Pi 5
+  - Yahboom ROS control Board v3
 
 ## ディレクトリ・ファイルの説明
 
@@ -75,18 +75,19 @@ colcon build
 
 ### 3. 環境変数の設定
 
-`rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください 
+`rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
 
 ```bash
 cp rosenv_default.sh rosenv.sh
 ```
 
 以下の設定があります：
+
 - `ROS_DOMAIN_ID`: ROSドメインID
 - 遠隔制御に使う環境変数（しない場合 or 分からない場合はコメントアウトすること）
-    - `RMW_IMPLEMENTATION`: DDSの選択
-    - `ROS_DISCOVERY_SERVER`: Discovery Server のアドレス
-    - `ROS_SUPER_CLIENT`: スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
+  - `RMW_IMPLEMENTATION`: DDSの選択
+  - `ROS_DISCOVERY_SERVER`: Discovery Server のアドレス
+  - `ROS_SUPER_CLIENT`: スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
 
 必要に応じて編集してください。
 
@@ -112,6 +113,7 @@ loginctl enable-linger $(whoami)
 ```
 
 サービスを削除する場合：
+
 ```bash
 ./install_discovery_service.sh --remove
 ./install_rover_service.sh --remove
@@ -128,6 +130,7 @@ loginctl enable-linger $(whoami)
 ```
 
 または直接：
+
 ```bash
 source rosenv.sh
 source /opt/ros/jazzy/setup.bash
@@ -136,12 +139,12 @@ fastdds discovery -i 0 -p 11811
 
 #### 2. Rover ノードの起動
 
-別のターミナルで：
 ```bash
 ./rover.sh
 ```
 
 または直接：
+
 ```bash
 source rosenv.sh
 source /opt/ros/jazzy/setup.bash
