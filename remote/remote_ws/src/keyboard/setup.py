@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/wasd_controller.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -24,7 +25,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'wasd_publisher = keyboard.wasd_publisher:main',
+            'keyboard_publisher = keyboard.keyboard_publisher:main',
+            'wasd_controller = keyboard.wasd_controller:main',
         ],
     },
 )
