@@ -18,8 +18,8 @@ class WasdController(Node):
             10,
         )
 
-        self.linear_speed = 0.5  # m/s
-        self.angular_speed = 1.0  # rad/s
+        self.linear_speed = 1.0
+        self.angular_speed = 5.0
 
         self.get_logger().info('Started wasd_controller (subscribing to /keyboard)')
 
