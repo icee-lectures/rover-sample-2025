@@ -82,8 +82,8 @@ endif()
 set(ORBBEC_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDK/lib/${HOST_PLATFORM})
 set(ORBBEC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDK/include/)
 
-set(CMAKE_BUILD_RPATH "${CMAKE_BUILD_RPATH}:${ORBBEC_LIBS_DIR}")
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${ORBBEC_LIBS_DIR}")
+set(CMAKE_BUILD_RPATH "${CMAKE_BUILD_RPATH}:${ORBBEC_LIBS_DIR}:/usr/local/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${ORBBEC_LIBS_DIR}:/usr/local/lib")
 if(USE_NV_HW_DECODER)
   set(JETSON_MULTI_MEDIA_API_DIR /usr/src/jetson_multimedia_api)
   set(JETSON_MULTI_MEDIA_API_CLASS_DIR ${JETSON_MULTI_MEDIA_API_DIR}/samples/common/classes)
@@ -99,6 +99,15 @@ if(USE_NV_HW_DECODER)
     -L${TEGRA_ARMABI} -L${TEGRA_ARMABI}/tegra)
 endif()
 
+# Ensure OrbbecSDK is linked from system or vendored path
+find_library(ORBBEC_SDK_LIB
+  NAMES OrbbecSDK
+  PATHS ${ORBBEC_LIBS_DIR} /usr/local/lib /usr/lib /usr/lib/aarch64-linux-gnu
+)
+if(NOT ORBBEC_SDK_LIB)
+  message(FATAL_ERROR "OrbbecSDK library not found. Expected in ${ORBBEC_LIBS_DIR} or system paths.")
+endif()
+
 set(COMMON_INCLUDE_DIRS
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -109,11 +118,9 @@ set(COMMON_INCLUDE_DIRS
 )
 
 set(COMMON_LIBRARIES
-  ${ORBBEC_SDK_LIBRARIES}
+  ${ORBBEC_SDK_LIB}
   ${OpenCV_LIBS}
   Eigen3::Eigen
-  -lOrbbecSDK
-  -L${ORBBEC_LIBS_DIR}
   Threads::Threads
   -lrt
   -ldw
@@ -185,6 +192,7 @@ macro(add_orbbec_executable TARGET SOURCE)
   add_executable(${TARGET} ${SOURCE})
   target_include_directories(${TARGET} PUBLIC ${COMMON_INCLUDE_DIRS})
   target_link_libraries(${TARGET} ${COMMON_LIBRARIES} ${PROJECT_NAME})
+  target_link_options(${TARGET} PRIVATE -Wl,--no-as-needed)
   ament_target_dependencies(${TARGET} ${dependencies})
 endmacro()
 
@@ -196,6 +204,7 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 target_include_directories(${PROJECT_NAME} PUBLIC ${COMMON_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBRARIES})
+target_link_options(${PROJECT_NAME} PRIVATE -Wl,--no-as-needed)
 
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -213,6 +222,7 @@ add_orbbec_executable(topic_statistics_node tools/topic_statistics.cpp)
 add_library(frame_latency SHARED tools/frame_latency.cpp)
 target_include_directories(frame_latency PUBLIC ${COMMON_INCLUDE_DIRS})
 target_link_libraries(frame_latency ${COMMON_LIBRARIES})
+target_link_options(frame_latency PRIVATE -Wl,--no-as-needed)
 ament_target_dependencies(frame_latency ${dependencies})
 
 rclcpp_components_register_node(frame_latency
