@@ -70,8 +70,12 @@ sudo apt install python3-pygame
 ### ワークスペースのビルド
 
 ```bash
+# ビルドするワークスペースへ移動
 cd remote/remote_ws
-colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+# ワークスペースのビルド
+# --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
+colcon build --event-handlers console_direct+
 ```
 
 ### 環境変数の設定

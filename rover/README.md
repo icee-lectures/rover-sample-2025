@@ -6,6 +6,8 @@
 - 以下ハードウェアを使用します
   - Raspberry Pi 5
   - Yahboom ROS control Board v3
+  - Orbbec Astra Pro Plus
+    - 深度が要らなければ普通のWebカメラでも動作可能
 
 ## クイックスタート
 
@@ -29,7 +31,7 @@ sudo apt install ros-jazzy-desktop ros-jazzy-rmw-fastrtps-cpp \
 
 # ビルド
 cd rover_ws
-colcon build --event-handlers console_direct+
+colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # 起動
 cd ..
@@ -151,8 +153,9 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 cd rover_ws
 
 # ワークスペースのビルド
-# --event-handlers  console_direct+ はビルド状況の詳細ログを出力します（省略可）
-colcon build --event-handlers  console_direct+ 
+# --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
+# --cmake-args -DCMAKE_BUILD_TYPE=Release : OrbbecSDK_ROS2がデフォルトでDebugでビルドされるためReleaseを指定しています
+colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
 ### 環境変数の設定
