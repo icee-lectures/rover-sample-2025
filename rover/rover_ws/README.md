@@ -1,7 +1,7 @@
 ## rover_ws マニュアル
 
 ### 概要
-- ROS 2 ワークスペース。カメラから JPEG 圧縮画像を配信する `camera_main` と、Rostmaster ベースの車両制御ノード `robot_control_board` を含む。
+- ROS 2 ワークスペース。カメラから JPEG 圧縮画像を配信する `camera` と、Rostmaster ベースの車両制御ノード `robot_control_board` を含む。
 - 主なトピック: `camera/image_raw/compressed`, `camera/aruco_debug/compressed`, `/cmd_vel`, `/imu/data_raw`, `/imu/mag`, `/vel_raw`, `/joint_states` など。
 
 ### 前提環境
@@ -10,7 +10,7 @@
 - Python 3.10 以上推奨。
 
 ### パッケージ構成
-- `src/camera_main` (C++/ament_cmake)
+- `src/camera` (C++/ament_cmake)
 	- ノード `camera`: GStreamer パイプラインで `/dev/video0` の JPEG をそのまま `camera/image_raw/compressed` へ配信。
 	- ノード `aruco_detector`: JPEG を OpenCV でデコードし ArUco マーカー検出。デバッグ画像を `camera/aruco_debug/compressed` へ（パラメータで無効化可）。
 - `src/robot_control_board` (Python/ament_python)
@@ -37,13 +37,13 @@ source install/setup.bash
 ### 実行手順
 - カメラ配信ノード
 ```bash
-ros2 run camera_main camera
+ros2 run camera camera
 ```
 	- デフォルトで `/dev/video0` を 1280x720 30fps JPEG で配信。
 
 - ArUco 検出ノード
 ```bash
-ros2 run camera_main aruco_detector --ros-args \
+ros2 run camera aruco_detector --ros-args \
 	-p dictionary_id:=0 \
 	-p publish_debug_image:=true
 ```
@@ -77,5 +77,5 @@ ros2 run robot_control_board driver_node --ros-args \
 - パーミッション問題: `/dev/video0` へのアクセス権を確認し、必要なら `udev` 設定または `sudo usermod -aG video <ユーザ>`。
 
 ### 開発メモ
-- `camera_main` は GStreamer で JPEG をデコードせず配信する構成のため CPU 使用率が低い。OpenCV で処理するノードを増やす場合は QoS を `SensorDataQoS` 相当で揃えると取りこぼしを減らせる。
+- `camera` は GStreamer で JPEG をデコードせず配信する構成のため CPU 使用率が低い。OpenCV で処理するノードを増やす場合は QoS を `SensorDataQoS` 相当で揃えると取りこぼしを減らせる。
 - `aruco_detector` の辞書やパラメータは launch ファイル未提供のため、必要に応じて `--ros-args` で指定する。

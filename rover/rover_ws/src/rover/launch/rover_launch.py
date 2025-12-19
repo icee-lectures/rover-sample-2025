@@ -4,16 +4,16 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        # camera_main - camera node
+        # camera - camera node
         Node(
-            package='camera_main',
+            package='camera',
             executable='camera',
             name='camera',
             output='screen',
         ),
-        # camera_main - aruco_detector node
+        # camera - aruco_detector node
         Node(
-            package='camera_main',
+            package='camera',
             executable='aruco_detector',
             name='aruco_detector',
             output='screen',
