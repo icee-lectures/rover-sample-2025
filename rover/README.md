@@ -16,29 +16,6 @@
 3. `rosenv_default.sh` を `rosenv.sh` にコピーして環境変数を設定
 4. Discovery Server（必要時）→ Rover ノードを起動
 
-### 代表的なコマンド
-
-```bash
-cd rover
-cp rosenv_default.sh rosenv.sh
-chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh start_ROS.sh
-
-# 依存パッケージ
-sudo apt update
-sudo apt install ros-jazzy-desktop ros-jazzy-rmw-fastrtps-cpp \
-                 ros-jazzy-cv-bridge ros-jazzy-image-transport ros-jazzy-aruco-msgs \
-                 libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-
-# ビルド
-cd rover_ws
-colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-# 起動
-cd ..
-./ros-discovery.sh   # Discovery Serverを使う場合
-./rover.sh           # Rover ノード起動
-```
-
 ## ディレクトリ・ファイルの説明
 
 ### ルートディレクトリ
@@ -167,19 +144,21 @@ colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=
 cp rosenv_default.sh rosenv.sh
 ```
 
-以下の設定があります：
+`rosenv.sh` の例:
 
-- `ROS_DOMAIN_ID`: ROSドメインID
-- 遠隔制御に使う環境変数（しない場合 or 分からない場合はコメントアウトすること）
-  - `RMW_IMPLEMENTATION`: DDSの選択
-  - `ROS_DISCOVERY_SERVER`: Discovery Server のアドレス
-  - `ROS_SUPER_CLIENT`: スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
-
-必要に応じて編集してください。
+```bash
+export ROS_DOMAIN_ID=1
+# Discovery Server を使う場合のみ設定（しない場合 or 分からない場合はコメントアウトすること）
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp # DDSの選択
+export ROS_DISCOVERY_SERVER=127.0.0.1:11811 # Discovery Server (ローバー) のIPアドレス
+export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
+```
 
 ### systemd サービスの登録（オプション）
 
-システム起動時に自動的にノードを起動したい場合：
+- システム起動時に自動的にノードを起動したい場合に設定してください
+- 設定する場合はDiscovery ServerサービスとRoverノードサービスを両方有効化してください
+  - 起動順序設定がされているため
 
 ```bash
 # Discovery Server サービスの登録

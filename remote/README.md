@@ -91,10 +91,10 @@ cp rosenv_default.sh rosenv.sh
 
 ```bash
 export ROS_DOMAIN_ID=1
-# Discovery Server を使う場合のみ設定（Fast DDS を使用）
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-export ROS_DISCOVERY_SERVER=192.168.1.10:11811
-export ROS_SUPER_CLIENT=TRUE
+# Discovery Server を使う場合のみ設定（しない場合 or 分からない場合はコメントアウトすること）
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp # DDSの選択
+export ROS_DISCOVERY_SERVER=192.167.1.10:11811 # Discovery Server (ローバー) のIPアドレス
+export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
 ```
 
 - `ROS_DOMAIN_ID`: ローバー側と同じ値にしてください
