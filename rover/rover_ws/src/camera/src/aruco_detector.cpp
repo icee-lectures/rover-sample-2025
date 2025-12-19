@@ -18,20 +18,24 @@ public:
 
         dictionary_id_ = this->declare_parameter<int>("dictionary_id", cv::aruco::DICT_4X4_50);
         publish_debug_image_ = this->declare_parameter<bool>("publish_debug_image", true);
+        std::string image_topic = this->declare_parameter<std::string>("image_topic", "camera/image_raw/compressed");
+        std::string namespace_prefix = this->declare_parameter<std::string>("namespace_prefix", "aruco");
+        std::string aruco_topic = namespace_prefix + "/markers";
+        std::string debug_image_topic = namespace_prefix + "/debug/image_raw/compressed";
 
         dictionary_ = cv::aruco::getPredefinedDictionary(dictionary_id_);
         detector_params_ = cv::aruco::DetectorParameters::create();
 
         sub_compressed_ = this->create_subscription<sensor_msgs::msg::CompressedImage>(
-            "camera/image_raw/compressed", rclcpp::SensorDataQoS(),
+            image_topic, rclcpp::SensorDataQoS(),
             std::bind(&ArucoDetectorNode::onImage, this, _1));
 
         aruco_pub_ = this->create_publisher<aruco_msgs::msg::MarkerArray>(
-            "aruco", rclcpp::SystemDefaultsQoS());
+            aruco_topic, rclcpp::SystemDefaultsQoS());
 
         if (publish_debug_image_) {
             debug_pub_ = this->create_publisher<sensor_msgs::msg::CompressedImage>(
-                "camera/aruco_debug/compressed", rclcpp::SystemDefaultsQoS());
+                debug_image_topic, rclcpp::SystemDefaultsQoS());
         }
 
         RCLCPP_INFO(this->get_logger(), "Aruco detector node started. Subscribing to camera/image_raw/compressed");
