@@ -7,17 +7,49 @@
   - Raspberry Pi 5
   - Yahboom ROS control Board v3
 
+## クイックスタート
+
+1. 依存パッケージをインストール
+2. `rover_ws` をビルド
+3. `rosenv_default.sh` を `rosenv.sh` にコピーして環境変数を設定
+4. Discovery Server（必要時）→ Rover ノードを起動
+
+### 代表的なコマンド
+
+```bash
+cd rover
+cp rosenv_default.sh rosenv.sh
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh start_ROS.sh
+
+# 依存パッケージ
+sudo apt update
+sudo apt install ros-jazzy-desktop ros-jazzy-rmw-fastrtps-cpp \
+                 ros-jazzy-cv-bridge ros-jazzy-image-transport ros-jazzy-aruco-msgs \
+                 libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+# ビルド
+cd rover_ws
+colcon build --event-handlers console_direct+
+
+# 起動
+cd ..
+./ros-discovery.sh   # Discovery Serverを使う場合
+./rover.sh           # Rover ノード起動
+```
+
 ## ディレクトリ・ファイルの説明
 
 ### ルートディレクトリ
 
-- `rosenv.sh`: ROS 2 環境変数の設定スクリプト（ROS_DOMAIN_ID, Discovery Server設定など）
+- `rosenv_default.sh`: ROS2関連の環境変数設定（ROS_DOMAIN_ID, Discovery Serverなど）
+  - 編集する場合はコピーし `rosenv.sh` を作成して編集してください
 - `rover.sh`: Roverノード起動スクリプト
-- `ros-discovery.sh`: Fast-DDS Discovery Server 起動スクリプト
-- `install_rover_service.sh`: systemd ユーザーサービスとして Rover を登録・削除するスクリプト
-- `install_discovery_service.sh`: systemd ユーザーサービスとして Discovery Server を登録・削除するスクリプト
+- `ros-discovery.sh`: Discovery Server 起動スクリプト
 - `rover.service`: Rover ノード用 systemd サービスファイル
 - `ros-discovery.service`: Discovery Server 用 systemd サービスファイル
+- `install_rover_service.sh`: systemd ユーザーサービスとして Rover を登録・削除するスクリプト
+- `install_discovery_service.sh`: systemd ユーザーサービスとして Discovery Server を登録・削除するスクリプト
+- `start_ROS.sh`: ROS2本体とワークスペースの読み込み（rqt起動や開発時などに使用）
 
 ### rover_ws/
 
@@ -28,30 +60,61 @@ ROS 2 ワークスペース
 - **rover**: ローンチファイルを含むメインパッケージ
   - `rover_launch.py`: 全ノードを起動するローンチファイル
   
-- **camera_main**: カメラとArUcoマーカー検出を担当（C++パッケージ）
+- **camera**: カメラとArUcoマーカー検出を担当（C++パッケージ）
   - `camera`: カメラ画像を配信するノード
   - `aruco_detector`: ArUcoマーカーを検出するノード
-  - 依存: `rclcpp`, `sensor_msgs`, `aruco_msgs`, `opencv2`
 
 - **robot_control_board**: Yahboom ROS Control Board v3 を制御（Pythonパッケージ）
   - `driver_node`: モータードライバー、IMU、センサーを制御するノード
-  - `Rosmaster_Lib.py`: Yahboom制御ボード用ライブラリ
-  - トピック:
-    - 購読: `/cmd_vel`, `/RGBLight`, `/Buzzer`
-    - 発行: `/voltage`, `/joint_states`, `/vel_raw`, `/imu/data_raw`, `/imu/mag`
+    - `Rosmaster_Lib.py`: Yahboom制御ボード用ライブラリ
+
+- **OrbbecSDK_ROS2**: Orbbec社製3Dカメラ用ROS実装
+  - 詳細はパッケージ内のREADMEを参照してください
+
+### 便利スクリプト
+
+- `src/clean_ros_ws.sh`: キャッシュ・ビルド生成物のクリーン
+
+```bash
+cd rover/src
+./clean_ros_ws.sh
+```
+
+## 環境変数の設定
+
+`rosenv_default.sh` をコピーして `rosenv.sh` を作成してください。
+
+```bash
+cd remote
+cp rosenv_default.sh rosenv.sh
+```
+
+`rosenv.sh` の例:
+
+```bash
+export ROS_DOMAIN_ID=1
+# Discovery Server を使う場合のみ設定
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_DISCOVERY_SERVER=192.168.1.10:11811
+export ROS_SUPER_CLIENT=TRUE
+```
+
+- `ROS_DOMAIN_ID`: ローバー側とリモート側で同じ値にしてください
+- Discovery Serverを使わない場合は `RMW_IMPLEMENTATION`, `ROS_DISCOVERY_SERVER`, `ROS_SUPER_CLIENT` をコメントアウト
+
 
 ## 使用準備
 
-### 0. シェルスクリプトの実行権限付与
+### シェルスクリプトの実行権限の確認
 
-入手直後はスクリプトに実行権限が付いていない場合があります。最初に権限を付与してください。
+入手直後はスクリプトに実行権限が付いていない場合があります
 
 ```bash
 cd rover
-chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh start_ROS.sh
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh
 ```
 
-### 1. 依存パッケージのインストール
+### 依存パッケージのインストール
 
 ```bash
 # ROS 2 Jazzy がインストールされていることを確認
@@ -62,22 +125,42 @@ sudo apt install ros-jazzy-desktop
 sudo apt install ros-jazzy-rmw-fastrtps-cpp
 
 # カメラ関連
-sudo apt install ros-jazzy-cv-bridge ros-jazzy-image-transport ros-jazzy-aruco-msgs \
-                 libopencv-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt install ros-jazzy-aruco-msgs ros-jazzy-backward-ros ros-jazzy-camera-info-manager \
+                 ros-jazzy-compressed-image-transport ros-jazzy-cv-bridge \
+                 ros-jazzy-diagnostic-msgs ros-jazzy-diagnostic-updater \
+                 ros-jazzy-image-publisher ros-jazzy-image-transport ros-jazzy-image-transport-plugins \
+                 ros-jazzy-statistics-msgs \
+                 libdw-dev libgflags-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev \
+                 libopencv-dev nlohmann-json3-dev
 ```
 
-### 2. ワークスペースのビルド
+#### Orbbec カメラの udev ルール設定
+
+カメラを認識させるために udev ルールを導入してください
 
 ```bash
-cd rover_ws
-colcon build
+cd rover/rover_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
+sudo bash install_udev_rules.sh
+sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-### 3. 環境変数の設定
+### ワークスペースのビルド
+
+```bash
+# ビルドするワークスペースへ移動
+cd rover_ws
+
+# ワークスペースのビルド
+# --event-handlers  console_direct+ はビルド状況の詳細ログを出力します（省略可）
+colcon build --event-handlers  console_direct+ 
+```
+
+### 環境変数の設定
 
 `rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
 
 ```bash
+# rosenv_default.shをコピーしてrosenv.shを作る
 cp rosenv_default.sh rosenv.sh
 ```
 
@@ -91,7 +174,7 @@ cp rosenv_default.sh rosenv.sh
 
 必要に応じて編集してください。
 
-### 4. systemd サービスの登録（オプション）
+### systemd サービスの登録（オプション）
 
 システム起動時に自動的にノードを起動したい場合：
 
@@ -129,27 +212,10 @@ loginctl enable-linger $(whoami)
 ./ros-discovery.sh
 ```
 
-または直接：
-
-```bash
-source rosenv.sh
-source /opt/ros/jazzy/setup.bash
-fastdds discovery -i 0 -p 11811
-```
-
 #### 2. Rover ノードの起動
 
 ```bash
 ./rover.sh
-```
-
-または直接：
-
-```bash
-source rosenv.sh
-source /opt/ros/jazzy/setup.bash
-source rover_ws/install/setup.bash
-ros2 launch rover rover_launch.py
 ```
 
 ### systemd サービス経由での起動

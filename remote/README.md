@@ -2,96 +2,115 @@
 
 ## 前提
 
-- Ubuntu24.04, ROS2 Jazzy で動作検証を行っています
-- ゲームコントローラを使う場合は、物理マシンでUbuntuを実行する必要があります
-  - 仮想環境でゲームコントローラを認識できないため
+- Ubuntu 24.04 / ROS 2 Jazzy で動作確認
+- ゲームコントローラ利用時は物理マシンでの実行を推奨（仮想環境では認識しない場合あり）
+- キーボード入力は pygame でウィンドウを開くためディスプレイ環境が必要
+
+## クイックスタート
+
+1. 依存パッケージをインストール
+2. `remote_ws` をビルド
+3. `rosenv_default.sh` を `rosenv.sh` にコピーして必要に応じて編集
+4. ゲームパッド（またはキーボード）ノードを起動
 
 ## ディレクトリ・ファイルの説明
 
 ### ルートディレクトリ
 
-- `rosenv.sh`: ROS 2 環境変数の設定スクリプト
-- `start_ROS.sh`: ROS 2 起動スクリプト
-- `start_gamepad.sh`: ゲームコントローラで制御するノード起動スクリプト
+- `rosenv_default.sh`: ROS 2 関連の環境変数テンプレート（ROS_DOMAIN_ID, Discovery Server など）
+  - 編集する場合はコピーして `rosenv.sh` を作成し、そちらを編集してください
+- `start_gamepad.sh`: ゲームコントローラ用ローンチを起動
+- `start_wasd-controller.sh`: キーボード（WASD）用ローンチを起動
+- `start_ROS.sh`: ROS 2 本体とワークスペースの読み込み（rqt 起動や開発時などに使用）
 
 ### remote_ws/
 
-ROS 2 ワークスペース
+ROS2ワークスペース
 
 #### remote_ws/src/
 
-- **gamepad**: ゲームコントローラ入力を処理（Pythonパッケージ）
-  - `gamepad_publisher.py`: ゲームコントローラの入力を発行するノード
-  - `joy_to_cmd_vel.py`: ゲームコントローラ入力を速度指令に変換するノード
-  - `gamepad.launch.py`: ゲームコントローラ関連ノード起動用ローンチファイル
+- パッケージ: **gamepad**
+  - ノード: `gamepad_publisher.py`（/joy を発行）, `joy_to_cmd_vel.py`（/joy→/cmd_vel 変換）
+  - launchファイル: `gamepad.launch.py`（上記2ノードを同時起動）
+
+- パッケージ: **keyboard**
+  - ノード: `keyboard_publisher.py`（押下キーを `/keyboard` に配信）, `wasd_controller.py`（`/keyboard`→`/cmd_vel` 変換）
+  - launchファイル: `wasd_controller.launch.py`（上記2ノードを同時起動）
 
 ### src/
 
-ワークスペースに入れてパッケージ化していないROS 2 ノードやその他のプログラム
+パッケージ化していない補助スクリプト・ユーティリティ
 
-- `ros2_gamepad_pub.py`: ゲームコントローラ入力発行スクリプト
-- `ros2_joy_to_cmd_vel.py`: 速度指令変換スクリプト
+- `clean_ros_ws.sh`: `remote_ws` の build/install/log を削除してクリーンにするスクリプト
+- `test_gamepad.py`: ゲームパッド入力の動作確認用スクリプト
+- `test_keyboard-monitor.py`: キーボード入力のモニタ用スクリプト
 
 ## 使用準備
 
-### 0. シェルスクリプトの実行権限付与
+### シェルスクリプトの実行権限付与
 
-入手直後はスクリプトに実行権限が付いていない場合があります。最初に権限を付与してください。
+入手直後はスクリプトに実行権限が付いていない場合があります
 
 ```bash
 cd remote
-chmod +x start_ROS.sh start_gamepad.sh
+chmod +x start_gamepad.sh start_wasd-controller.sh
 ```
 
-### 1. 依存パッケージのインストール
+### 依存パッケージのインストール
 
 ```bash
-# ROS 2 Jazzy がインストールされていることを確認
+# ROS 2 Jazzy
 sudo apt update
 sudo apt install ros-jazzy-desktop
 
-# ゲームコントローラ関連
-sudo apt install ros-jazzy-joy
+# pygame（ゲームパッド/キーボード読み取りで使用）
+sudo apt install python3-pygame
 ```
 
-### 2. ワークスペースのビルド
+### ワークスペースのビルド
 
 ```bash
-cd remote_ws
-colcon build
+cd remote/remote_ws
+colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
-### 3. 環境変数の設定
+### 環境変数の設定
 
-`rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
+`rosenv_default.sh` をコピーして `rosenv.sh` を作成してください。
 
 ```bash
+cd remote
 cp rosenv_default.sh rosenv.sh
 ```
 
-以下の設定があります：
+`rosenv.sh` の例:
 
-- `ROS_DOMAIN_ID`: ROSドメインID
-- 遠隔制御に使う環境変数（しない場合 or 分からない場合はコメントアウトすること）
-  - `RMW_IMPLEMENTATION`: DDSの選択
-  - `ROS_DISCOVERY_SERVER`: Discovery Server のアドレス
-  - `ROS_SUPER_CLIENT`: スーパークライアント設定
+```bash
+export ROS_DOMAIN_ID=1
+# Discovery Server を使う場合のみ設定（Fast DDS を使用）
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_DISCOVERY_SERVER=192.168.1.10:11811
+export ROS_SUPER_CLIENT=TRUE
+```
 
-必要に応じて編集してください。
+- `ROS_DOMAIN_ID`: ローバー側と同じ値にしてください
+- Discovery Server を使わない場合は `RMW_IMPLEMENTATION/ROS_DISCOVERY_SERVER/ROS_SUPER_CLIENT` を設定しないでください
 
 ## 使用方法
 
-### ゲームコントローラノードの起動
+- ゲームコントローラ版とキーボード版があります
+- 両方を同時に起動しないでください（`/cmd_vel` が競合します）
+
+### ゲームコントローラの起動
 
 ```bash
+cd remote
 ./start_gamepad.sh
 ```
 
-または直接：
+### キーボード（WASD）の起動
 
 ```bash
-source rosenv.sh
-source /opt/ros/jazzy/setup.bash
-source remote_ws/install/setup.bash
-ros2 launch gamepad gamepad.launch.py
+cd remote
+./start_wasd-controller.sh
 ```
