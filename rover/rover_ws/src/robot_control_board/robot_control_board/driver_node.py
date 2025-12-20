@@ -13,7 +13,7 @@ from .Rosmaster_Lib import Rosmaster
 # ros lib
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String, Float32, Int32, Bool
+from std_msgs.msg import String, Float32, Int32, Bool, Float32MultiArray
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu, MagneticField, JointState
 from rclpy.clock import Clock
@@ -71,8 +71,11 @@ class yahboomcar_driver(Node):
         self.sub_RGBLight = self.create_subscription(
             Int32, "RGBLight", self.RGBLightcallback, 100
         )
-        self.sub_BUzzer = self.create_subscription(
+        self.sub_Buzzer = self.create_subscription(
             Bool, "Buzzer", self.Buzzercallback, 100
+        )
+        self.sub_pwmservo = self.create_subscription(
+            Float32MultiArray, "pwmservo", self.pwmservo_callback, 1
         )
 
         # create publisher
@@ -126,6 +129,31 @@ class yahboomcar_driver(Node):
         else:
             for i in range(3):
                 self.car.set_beep(0)
+
+    def pwmservo_callback(self, msg):
+        # PWMサーボ制御、subscriber callback function
+        if not isinstance(msg, Float32MultiArray):
+            return
+        # Float32MultiArray から4つのサーボ角度値を取得
+        # Extract 4 servo angle values from Float32MultiArray
+        if len(msg.data) >= 4:
+            # ラジアンからデグリーに変換し、0~180度の範囲に収まるようトリミング
+            # Convert from radians to degrees and trim to 0~180 degree range
+            angle_s1 = msg.data[0] * self.RA2DE
+            angle_s2 = msg.data[1] * self.RA2DE
+            angle_s3 = msg.data[2] * self.RA2DE
+            angle_s4 = msg.data[3] * self.RA2DE
+            
+            # 0~180度の範囲にトリミング
+            # Trim to 0~180 degree range
+            angle_s1 = max(0, min(180, angle_s1))
+            angle_s2 = max(0, min(180, angle_s2))
+            angle_s3 = max(0, min(180, angle_s3))
+            angle_s4 = max(0, min(180, angle_s4))
+            
+            # 4つのPWMサーボの角度を同時に制御
+            # Control four PWM servo angles simultaneously
+            self.car.set_pwm_servo_all(angle_s1, angle_s2, angle_s3, angle_s4)
 
     # pub data
     def pub_data(self):
