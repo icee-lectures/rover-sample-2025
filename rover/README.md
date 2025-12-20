@@ -50,9 +50,15 @@ ROS 2 ワークスペース
 - **OrbbecSDK_ROS2**: Orbbec社製3Dカメラ用ROS実装
   - 詳細はパッケージ内のREADMEを参照してください
 
-### 便利スクリプト
+### src/
+
+テストやメンテナンス用スクリプト
 
 - `src/clean_ros_ws.sh`: キャッシュ・ビルド生成物のクリーン
+- `src/yahboom_rosboard_v3_driver.py`: Yahboom ROS robot control board の独自修正版ドライバ
+  - 単体で実行 (`python3 src/yahboom_rosboard_v3_driver.py`) すると現在のセンサ情報の確認ができる
+- `src/test_list-orbbec-cam.sh`: Orbbec社のカメラが接続されているかどうか確認する
+- `rover/src/ros2_v4l2_camera_pub.sh`: [v4l2_camera](https://docs.ros.org/en/jazzy/p/v4l2_camera/)でWebカメラ等の映像をとりあえずパブリッシュする
 
 ```bash
 cd rover/src
