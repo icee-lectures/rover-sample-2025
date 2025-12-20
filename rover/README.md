@@ -65,29 +65,6 @@ cd rover/src
 ./clean_ros_ws.sh
 ```
 
-## 環境変数の設定
-
-`rosenv_default.sh` をコピーして `rosenv.sh` を作成してください。
-
-```bash
-cd remote
-cp rosenv_default.sh rosenv.sh
-```
-
-`rosenv.sh` の例:
-
-```bash
-export ROS_DOMAIN_ID=1
-# Discovery Server を使う場合のみ設定
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-export ROS_DISCOVERY_SERVER=192.168.1.10:11811
-export ROS_SUPER_CLIENT=TRUE
-```
-
-- `ROS_DOMAIN_ID`: ローバー側とリモート側で同じ値にしてください
-- Discovery Serverを使わない場合は `RMW_IMPLEMENTATION`, `ROS_DISCOVERY_SERVER`, `ROS_SUPER_CLIENT` をコメントアウト
-
-
 ## 使用準備
 
 ### シェルスクリプトの実行権限の確認
@@ -146,6 +123,7 @@ colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=
 `rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
 
 ```bash
+cd remote
 # rosenv_default.shをコピーしてrosenv.shを作る
 cp rosenv_default.sh rosenv.sh
 ```
@@ -159,6 +137,9 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp # DDSの選択
 export ROS_DISCOVERY_SERVER=127.0.0.1:11811 # Discovery Server (ローバー) のIPアドレス
 export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery Server 越しでもトピック一覧を見られるようにする）
 ```
+
+- `ROS_DOMAIN_ID`: ローバー側とリモート側で同じ値にしてください
+- Discovery Serverを使わない場合は `RMW_IMPLEMENTATION`, `ROS_DISCOVERY_SERVER`, `ROS_SUPER_CLIENT` をコメントアウト
 
 ### systemd サービスの登録（オプション）
 
