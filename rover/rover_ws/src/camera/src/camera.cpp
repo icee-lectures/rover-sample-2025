@@ -14,7 +14,7 @@ public:
 
         std::string video_device = this->declare_parameter<std::string>("video_device", "/dev/video0");
         std::string camera_name = this->declare_parameter<std::string>("camera_name", "camera");
-        std::string output_topic = camera_name + "/image_raw/compressed";
+        std::string output_topic = camera_name + "/color/image_raw/compressed";
 
         // ★ 通信安定性重視のQoS設定
         // - BEST_EFFORT: 再送しない（フレーム落としてOK）
