@@ -41,6 +41,7 @@ ROS 2 ワークスペース
   
 - **camera**: カメラとArUcoマーカー検出を担当（C++パッケージ）
   - `camera`: カメラ画像を配信するノード
+  - `camera_fallback`: LTE回線越しなど通信帯域が限られた環境でも使える低ビットレート画像を配信するノード
   - `aruco_detector`: ArUcoマーカーを検出するノード
 
 - **robot_control_board**: Yahboom ROS Control Board v3 を制御（Pythonパッケージ）
