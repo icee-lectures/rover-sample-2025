@@ -233,3 +233,51 @@ journalctl --user -u rover.service -f
 systemctl --user stop rover.service
 systemctl --user stop ros-discovery.service
 ```
+
+## トピック
+
+### パブリッシュするトピック
+
+| トピック名 | 型 | 説明 |
+| --- | --- | --- |
+| `/aruco/markers` | `aruco_msgs/msg/MarkerArray` | 検出されたArUcoマーカーの情報 |
+| `/aruco/debug/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | ArUco検出デバッグ画像（圧縮） |
+| `/camera/color/image_raw` | `sensor_msgs/msg/Image` | カラーカメラの生画像 |
+| `/camera/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮画像 |
+| `/camera/color/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮深度画像 |
+| `/camera/color/image_raw/theora` | `theora_image_transport/msg/Packet` | カラーカメラのTheora圧縮画像 |
+| `/camera/color/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | カラーカメラのZstd圧縮画像 |
+| `/camera/color/camera_info` | `sensor_msgs/msg/CameraInfo` | カラーカメラのキャリブレーション情報 |
+| `/camera/depth/image_raw` | `sensor_msgs/msg/Image` | 深度カメラの生画像 |
+| `/camera/depth/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮画像 |
+| `/camera/depth/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮深度画像 |
+| `/camera/depth/image_raw/theora` | `theora_image_transport/msg/Packet` | 深度カメラのTheora圧縮画像 |
+| `/camera/depth/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 深度カメラのZstd圧縮画像 |
+| `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
+| `/camera/depth/points` | `sensor_msgs/msg/PointCloud2` | 深度カメラのポイントクラウド |
+| `/camera/depth_filter_status` | `std_msgs/msg/String` | 深度フィルターの状態 |
+| `/camera/depth_to_color` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・カラーカメラ間の変換行列 |
+| `/camera/depth_to_ir` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・赤外線カメラ間の変換行列 |
+| `/camera/ir/image_raw` | `sensor_msgs/msg/Image` | 赤外線カメラの生画像 |
+| `/camera/ir/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮画像 |
+| `/camera/ir/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮深度画像 |
+| `/camera/ir/image_raw/theora` | `theora_image_transport/msg/Packet` | 赤外線カメラのTheora圧縮画像 |
+| `/camera/ir/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラのZstd圧縮画像 |
+| `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
+| `/camera_fallback/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 低ビットレートカラー画像（圧縮） |
+| `/imu/data_raw` | `sensor_msgs/msg/Imu` | IMUセンサーのデータ |
+| `/imu/mag` | `sensor_msgs/msg/MagneticField` | 磁気センサーのデータ |
+| `/joint_states` | `sensor_msgs/msg/JointState` | ジョイント（モーター）の状態 |
+| `/tf` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（動的） |
+| `/tf_static` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（静的） |
+| `/voltage` | `std_msgs/msg/Float32` | 電源電圧 |
+
+### サブスクライブするトピック
+
+| トピック名 | 型 | 説明 |
+| --- | --- | --- |
+| `/cmd_vel` | `geometry_msgs/msg/Twist` | 速度指令（線速度・角速度） |
+| `/vel_raw` | `geometry_msgs/msg/Twist` | 生の速度指令 |
+| `/Buzzer` | `std_msgs/msg/Bool` | ブザー制御（True: 鳴動、False: 停止） |
+| `/RGBLight` | `std_msgs/msg/Int32` | RGB LED制御 |
+| `/pwmservo` | `std_msgs/msg/Float32MultiArray` | PWM サーボ制御 (4ch) |
