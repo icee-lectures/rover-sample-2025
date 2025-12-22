@@ -112,6 +112,8 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ### ワークスペースのビルド
 
+#### 全体のビルド
+
 ```bash
 # ビルドするワークスペースへ移動
 cd rover_ws
@@ -120,6 +122,19 @@ cd rover_ws
 # --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
 # --cmake-args -DCMAKE_BUILD_TYPE=Release : OrbbecSDK_ROS2がデフォルトでDebugでビルドされるためReleaseを指定しています
 colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+
+#### 特定パッケージのビルド
+
+例: camera パッケージのビルド
+
+```bash
+# 普通のビルド
+colcon build --event-handlers  console_direct+ --packages-select camera
+
+# クリーンビルド
+# CMakeLists.txt や pakcage.xml を編集した場合はクリーンビルドしたほうが無難
+colcon build --event-handlers  console_direct+ --packages-select camera --cmake-clean-cache
 ```
 
 ### 環境変数の設定
