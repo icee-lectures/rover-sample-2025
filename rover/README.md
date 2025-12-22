@@ -98,6 +98,11 @@ sudo apt install ros-jazzy-aruco-msgs ros-jazzy-backward-ros ros-jazzy-camera-in
                  ros-jazzy-statistics-msgs \
                  libdw-dev libgflags-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev \
                  libopencv-dev nlohmann-json3-dev
+
+# OrbbecSDKの入手とインストール
+cd ~
+wget https://github.com/orbbec/OrbbecSDK/releases/download/v1.10.18/OrbbecSDK_v1.10.18_arm64.deb
+sudo dpkg -i OrbbecSDK_v1.10.18_arm64.deb
 ```
 
 #### Orbbec カメラの udev ルール設定
