@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(aruco_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
 
 # ---- GStreamer を pkg-config で探す ----
 find_package(PkgConfig REQUIRED)
@@ -39,6 +41,7 @@ endif()
 
 add_executable(camera src/camera.cpp)
 add_executable(aruco_detector src/aruco_detector.cpp)
+add_executable(camera_fallback src/camera_fallback.cpp)
 
 ament_target_dependencies(camera
   rclcpp
@@ -51,6 +54,13 @@ ament_target_dependencies(aruco_detector
   aruco_msgs
 )
 
+ament_target_dependencies(camera_fallback
+  rclcpp
+  sensor_msgs
+  cv_bridge
+  image_transport
+)
+
 target_link_libraries(camera
   ${GST_LIBRARIES}
   ${GSTAPP_LIBRARIES}
@@ -61,9 +71,15 @@ target_link_libraries(aruco_detector
   ${OpenCV_LIBRARIES}
 )
 
+target_link_libraries(camera_fallback
+  ${OpenCV_LIBRARIES}
+)
+
 install(TARGETS camera
   DESTINATION lib/${PROJECT_NAME})
 install(TARGETS aruco_detector
+  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS camera_fallback
   DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files

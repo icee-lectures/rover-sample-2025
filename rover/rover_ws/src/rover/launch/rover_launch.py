@@ -19,6 +19,23 @@ def generate_launch_description():
                 )
             )
         ),
+        # camera パッケージの camera_fallback ノード（圧縮ストリーム出力）
+        Node(
+            package='camera',
+            executable='camera_fallback',
+            name='camera_fallback',
+            output='screen',
+            parameters=[
+                {
+                    'input_topic': 'camera/color/image_raw',
+                    'output_topic': 'camera_fallback/color/image_raw/compressed',
+                    'output_width': 320,
+                    'output_height': 240,
+                    'output_ms': 500,
+                    'jpeg_quality': 30,
+                }
+            ],
+        ),
         # camera パッケージの aruco_detector ノード
         Node(
             package='camera',
