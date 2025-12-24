@@ -19,16 +19,6 @@ def generate_launch_description():
                 )
             )
         ),
-        # camera パッケージの camera.republish.launch.py を起動
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(
-                    get_package_share_directory('camera'),
-                    'launch',
-                    'camera.republish.launch.py',
-                )
-            )
-        ),
         # camera パッケージの camera_fallback ノード（圧縮ストリーム出力）
         Node(
             package='camera',

@@ -23,27 +23,10 @@ def generate_launch_description() -> LaunchDescription:
         output='screen',
     )
     
-    # image_transport republish ノード（ffmpeg -> raw）
-    image_transport_republish_node = Node(
-        package='image_transport',
-        executable='republish',
-        name='image_transport_republish',
-        output='screen',
-        parameters=[
-            {'in_transport': 'ffmpeg'},
-            {'out_transport': 'raw'},
-        ],
-        remappings=[
-            ('in/ffmpeg', '/camera_encoded/ffmpeg'),
-            ('out', '/camera_decoded/image_raw'),
-        ],
-    )
-    
     return LaunchDescription(
         [
             keyboard_publisher_node,
             wasd_controller_node,
-            image_transport_republish_node,
             # keyboard_publisherが終了したらシャットダウン
             RegisterEventHandler(
                 OnProcessExit(
