@@ -62,6 +62,8 @@ chmod +x start_gamepad.sh start_wasd-controller.sh
 # ROS 2 Jazzy
 sudo apt update
 sudo apt install ros-jazzy-desktop
+sudo apt install ros-jazzy-image-transport ros-jazzy-image-transport-plugins \
+                 ros-jazzy-ffmpeg-image-transport ros-jazzy-ffmpeg-image-transport-tools
 
 # pygame（ゲームパッド/キーボード読み取りで使用）
 sudo apt install python3-pygame
