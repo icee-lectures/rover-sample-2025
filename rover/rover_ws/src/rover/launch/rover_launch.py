@@ -36,16 +36,6 @@ def generate_launch_description():
                 }
             ],
         ),
-        # camera パッケージの aruco_detector ノード
-        Node(
-            package='camera',
-            executable='aruco_detector',
-            name='aruco_detector',
-            output='screen',
-            parameters=[
-                {'image_topic': 'camera/color/image_raw/compressed'},
-            ],
-        ),
         # robot_control_board の driver_node ノード
         Node(
             package='robot_control_board',

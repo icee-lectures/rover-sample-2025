@@ -9,7 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(aruco_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
@@ -40,18 +39,11 @@ if(BUILD_TESTING)
 endif()
 
 add_executable(camera src/camera.cpp)
-add_executable(aruco_detector src/aruco_detector.cpp)
 add_executable(camera_fallback src/camera_fallback.cpp)
 
 ament_target_dependencies(camera
   rclcpp
   sensor_msgs
-)
-
-ament_target_dependencies(aruco_detector
-  rclcpp
-  sensor_msgs
-  aruco_msgs
 )
 
 ament_target_dependencies(camera_fallback
@@ -67,17 +59,11 @@ target_link_libraries(camera
   ${GSTBASE_LIBRARIES}
 )
 
-target_link_libraries(aruco_detector
-  ${OpenCV_LIBRARIES}
-)
-
 target_link_libraries(camera_fallback
   ${OpenCV_LIBRARIES}
 )
 
 install(TARGETS camera
-  DESTINATION lib/${PROJECT_NAME})
-install(TARGETS aruco_detector
   DESTINATION lib/${PROJECT_NAME})
 install(TARGETS camera_fallback
   DESTINATION lib/${PROJECT_NAME})
