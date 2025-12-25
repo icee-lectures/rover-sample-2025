@@ -4,20 +4,16 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS_DIR="$SCRIPT_DIR/rover_ws"
 
-# 環境変数の設定
-if [ -f "$SCRIPT_DIR/rosenv.sh" ]; then
-    source $SCRIPT_DIR/rosenv.sh
-else
-    source $SCRIPT_DIR/rosenv_default.sh
-fi
+# 共通の ROS セットアップを実行（同一シェルで反映させるため source）
+source "$SCRIPT_DIR/start_ROS.sh" || {
+    echo -e "ROS 環境のセットアップに失敗しました。"
+    exit 1
+}
 
 # 起動前の待機時間（必要に応じて調整）
 sleep 10
 
-# ROS 2 環境のセットアップ
-source /opt/ros/jazzy/setup.bash
-source "$WS_DIR/install/setup.bash"
-
+# ROS2 デーモンの再起動
 ros2 daemon stop
 ros2 daemon start
 
