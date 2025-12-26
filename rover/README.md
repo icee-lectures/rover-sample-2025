@@ -100,7 +100,7 @@ cd ~/rover-sample-2025/rover
 sudo ./install_dependency.sh
 ```
 
-#### Orbbec カメラの udev ルール設定
+### Orbbec カメラの udev ルール設定
 
 カメラを認識させるために udev ルールを導入してください
 
@@ -163,24 +163,18 @@ export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery 
 - `ROS_DOMAIN_ID`: ローバー側とリモート側で同じ値にしてください
 - Discovery Serverを使わない場合は `RMW_IMPLEMENTATION`, `ROS_DISCOVERY_SERVER`, `ROS_SUPER_CLIENT` をコメントアウト
 
-### systemd サービスの登録（オプション）
+### systemd サービスの登録
 
-- システム起動時に自動的にノードを起動したい場合に設定してください
-- 設定する場合はDiscovery ServerサービスとRoverノードサービスを両方有効化してください
-  - 起動順序設定がされているため
+起動順序設定がされているため，Discovery Server を使わない場合も Discovery Server サービスとRover サービスを両方有効化してください
 
 ```bash
-# Discovery Server サービスの登録
+# サービスの登録
+./install_rover_service.sh
 ./install_discovery_service.sh
 
-# Rover ノードサービスの登録
-./install_rover_service.sh
-
-# サービスの有効化と起動
-systemctl --user enable ros-discovery.service
+# サービスの有効化
 systemctl --user enable rover.service
-systemctl --user start ros-discovery.service
-systemctl --user start rover.service
+systemctl --user enable ros-discovery.service
 
 # systemdのユーザーモードが未ログインでも自動起動する設定
 loginctl enable-linger $(whoami)
@@ -189,29 +183,13 @@ loginctl enable-linger $(whoami)
 サービスを削除する場合：
 
 ```bash
-./install_discovery_service.sh --remove
 ./install_rover_service.sh --remove
+./install_discovery_service.sh --remove
 ```
 
 ## 使用方法
 
-### 手動起動
-
-#### 1. Discovery Server の起動
-
-```bash
-./ros-discovery.sh
-```
-
-#### 2. Rover ノードの起動
-
-```bash
-./rover.sh
-```
-
-### systemd サービス経由での起動
-
-サービスを登録済みの場合：
+電源を投入すると自動起動します
 
 ```bash
 # 起動
@@ -237,34 +215,42 @@ systemctl --user stop ros-discovery.service
 
 | トピック名 | 型 | 説明 |
 | --- | --- | --- |
-| `/aruco/markers` | `aruco_msgs/msg/MarkerArray` | 検出されたArUcoマーカーの情報 |
-| `/aruco/debug/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | ArUco検出デバッグ画像（圧縮） |
+| `/aruco_detections` | `aruco_opencv_msgs/msg/ArucoDetection` | 検出されたArUcoマーカーの情報 |
+| `/aruco_tracker_autostart/debug` | `sensor_msgs/msg/Image` | ArUcoトラッカーのデバッグ画像 |
+| `/aruco_tracker_autostart/transition_event` | `lifecycle_msgs/msg/TransitionEvent` | ArUcoトラッカーのライフサイクル遷移イベント |
+| `/camera/color/camera_info` | `sensor_msgs/msg/CameraInfo` | カラーカメラのキャリブレーション情報 |
 | `/camera/color/image_raw` | `sensor_msgs/msg/Image` | カラーカメラの生画像 |
 | `/camera/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮画像 |
 | `/camera/color/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮深度画像 |
+| `/camera/color/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | カラーカメラのFFmpeg圧縮画像 |
 | `/camera/color/image_raw/theora` | `theora_image_transport/msg/Packet` | カラーカメラのTheora圧縮画像 |
 | `/camera/color/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | カラーカメラのZstd圧縮画像 |
-| `/camera/color/camera_info` | `sensor_msgs/msg/CameraInfo` | カラーカメラのキャリブレーション情報 |
+| `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
 | `/camera/depth/image_raw` | `sensor_msgs/msg/Image` | 深度カメラの生画像 |
 | `/camera/depth/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮画像 |
 | `/camera/depth/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮深度画像 |
+| `/camera/depth/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | 深度カメラのFFmpeg圧縮画像 |
 | `/camera/depth/image_raw/theora` | `theora_image_transport/msg/Packet` | 深度カメラのTheora圧縮画像 |
 | `/camera/depth/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 深度カメラのZstd圧縮画像 |
-| `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
 | `/camera/depth/points` | `sensor_msgs/msg/PointCloud2` | 深度カメラのポイントクラウド |
 | `/camera/depth_filter_status` | `std_msgs/msg/String` | 深度フィルターの状態 |
 | `/camera/depth_to_color` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・カラーカメラ間の変換行列 |
 | `/camera/depth_to_ir` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・赤外線カメラ間の変換行列 |
+| `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
 | `/camera/ir/image_raw` | `sensor_msgs/msg/Image` | 赤外線カメラの生画像 |
 | `/camera/ir/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮画像 |
 | `/camera/ir/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮深度画像 |
+| `/camera/ir/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | 赤外線カメラのFFmpeg圧縮画像 |
 | `/camera/ir/image_raw/theora` | `theora_image_transport/msg/Packet` | 赤外線カメラのTheora圧縮画像 |
 | `/camera/ir/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラのZstd圧縮画像 |
-| `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
 | `/camera_fallback/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 低ビットレートカラー画像（圧縮） |
+| `/diagnostics` | `diagnostic_msgs/msg/DiagnosticArray` | カメラ等の診断情報 |
+| `/edition` | `std_msgs/msg/Float32` | Yahboom基板のファームウェア版数 |
 | `/imu/data_raw` | `sensor_msgs/msg/Imu` | IMUセンサーのデータ |
 | `/imu/mag` | `sensor_msgs/msg/MagneticField` | 磁気センサーのデータ |
 | `/joint_states` | `sensor_msgs/msg/JointState` | ジョイント（モーター）の状態 |
+| `/parameter_events` | `rcl_interfaces/msg/ParameterEvent` | ノードパラメーターのイベント |
+| `/rosout` | `rcl_interfaces/msg/Log` | ノードログ |
 | `/tf` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（動的） |
 | `/tf_static` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（静的） |
 | `/voltage` | `std_msgs/msg/Float32` | 電源電圧 |
