@@ -46,7 +46,7 @@ else
             return 1 2>/dev/null || exit 1
         fi
     else
-        echo -e "colcon が見つかりません。colcon をインストールしてください。"
+        echo -e "colcon が見つかりません。ROS2 Jazzy が正しくインストールされているか確認してください。"
         return 1 2>/dev/null || exit 1
     fi
 fi
