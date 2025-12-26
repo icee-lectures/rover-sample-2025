@@ -43,4 +43,17 @@ def generate_launch_description():
             name='driver_node',
             output='screen',
         ),
+        # aruco_opencv の aruco_tracker_autostart ノード
+        Node(
+            package='aruco_opencv',
+            executable='aruco_tracker_autostart',
+            name='aruco_tracker_autostart',
+            output='screen',
+            parameters=[
+                {
+                    'cam_base_topic': '/camera/color/image_raw',
+                    'marker_size': 0.15,
+                }
+            ],
+        ),
     ])
