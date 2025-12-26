@@ -9,12 +9,22 @@
   - Orbbec Astra Pro Plus
     - 深度が要らなければ普通のWebカメラでも動作可能
 
-## クイックスタート
+## クイックガイド
 
-1. 依存パッケージをインストール
-2. `rover_ws` をビルド
-3. `rosenv_default.sh` を `rosenv.sh` にコピーして環境変数を設定
-4. Discovery Server（必要時）→ Rover ノードを起動
+### インストール
+
+1. 依存パッケージ等をインストール: `sudo ~/rover-sample-2025/rover/install_dependency.sh` など
+2. `rover_ws` をビルド: `cd ~/rover-sample-2025/rover/rover_ws && colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release`
+3. ROS2環境変数を設定: `rosenv_default.sh` を `rosenv.sh` にコピーして編集
+4. 自動起動設定: `~/rover-sample-2025/rover/install_rover_service.sh`
+
+### 通常使用
+
+自動起動設定をしている場合は電源ONで自動起動します
+
+#### 実行中のシェルでROS2を読み込む場合
+
+ROS2読込スクリプトを実行: `source ~/rover-sample-2025/rover/start_ROS.sh`
 
 ## ディレクトリ・ファイルの説明
 
@@ -77,36 +87,17 @@ cd rover/src
 入手直後はスクリプトに実行権限が付いていない場合があります
 
 ```bash
-cd rover
-chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh
+cd ~/rover-sample-2025/rover
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh install_dependency.sh
 ```
 
 ### 依存パッケージのインストール
 
+`install_dependency.sh` を実行するか、手動で必要なパッケージをインストールしてください
+
 ```bash
-# ROS 2 Jazzy がインストールされていることを確認
-sudo apt update
-sudo apt install ros-jazzy-desktop
-
-# Fast-DDS Discovery Server
-sudo apt install ros-jazzy-rmw-fastrtps-cpp
-
-# カメラ関連
-sudo apt install ros-jazzy-aruco-msgs ros-jazzy-backward-ros ros-jazzy-camera-info-manager \
-                 ros-jazzy-compressed-image-transport ros-jazzy-cv-bridge \
-                 ros-jazzy-diagnostic-msgs ros-jazzy-diagnostic-updater \
-                 ros-jazzy-image-publisher ros-jazzy-image-transport ros-jazzy-image-transport-plugins \
-                 ros-jazzy-topic-tools \
-                 ros-jazzy-ffmpeg-image-transport \
-                 ros-jazzy-ffmpeg-image-transport-tools \
-                 ros-jazzy-statistics-msgs \
-                 libdw-dev libgflags-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev \
-                 libopencv-dev nlohmann-json3-dev
-
-# OrbbecSDKの入手とインストール
-cd ~
-wget https://github.com/orbbec/OrbbecSDK/releases/download/v1.10.18/OrbbecSDK_v1.10.18_arm64.deb
-sudo dpkg -i OrbbecSDK_v1.10.18_arm64.deb
+cd ~/rover-sample-2025/rover
+sudo ./install_dependency.sh
 ```
 
 #### Orbbec カメラの udev ルール設定
@@ -114,7 +105,7 @@ sudo dpkg -i OrbbecSDK_v1.10.18_arm64.deb
 カメラを認識させるために udev ルールを導入してください
 
 ```bash
-cd rover/rover_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
+cd ~/rover-sample-2025/rover/rover_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
 sudo bash install_udev_rules.sh
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
@@ -125,7 +116,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ```bash
 # ビルドするワークスペースへ移動
-cd rover_ws
+cd ~/rover-sample-2025/rover/rover_ws
 
 # ワークスペースのビルド
 # --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
@@ -138,6 +129,9 @@ colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=
 例: camera パッケージのビルド
 
 ```bash
+# ビルドするワークスペースへ移動
+cd ~/rover-sample-2025/rover/rover_ws
+
 # 普通のビルド
 colcon build --event-handlers  console_direct+ --packages-select camera
 
@@ -151,7 +145,7 @@ colcon build --event-handlers  console_direct+ --packages-select camera --cmake-
 `rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/rover
 # rosenv_default.shをコピーしてrosenv.shを作る
 cp rosenv_default.sh rosenv.sh
 ```
