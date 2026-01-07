@@ -7,7 +7,7 @@ id=0のArUcoマーカーを見つけたら、それに向かって走る制御�
 
 import rclpy
 from rclpy.node import Node
-from aruco_msgs.msg import MarkerArray
+from aruco_opencv_msgs.msg import ArucoDetection
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32
 
@@ -20,19 +20,21 @@ class ArucoTraceNode(Node):
         
         # パラメータの定義
         self.declare_parameter("marker_id", 0)
-        self.declare_parameter("linear_speed", 0.5)  # m/s
-        self.declare_parameter("angular_speed", 1.0)  # rad/s
-        self.declare_parameter("center_threshold", 50)  # ピクセル
+        self.declare_parameter("linear_speed", 1.0)
+        self.declare_parameter("angular_speed", 5.0)
+        self.declare_parameter("distance_threshold", 1.0)
+        self.declare_parameter("distance_tolerance", 0.1)
         
         self.marker_id = self.get_parameter("marker_id").value
         self.linear_speed = self.get_parameter("linear_speed").value
         self.angular_speed = self.get_parameter("angular_speed").value
-        self.center_threshold = self.get_parameter("center_threshold").value
+        self.distance_threshold = self.get_parameter("distance_threshold").value
+        self.distance_tolerance = self.get_parameter("distance_tolerance").value
         
         # サブスクライバー：ArUcoマーカー情報
         self.marker_subscriber = self.create_subscription(
-            MarkerArray,
-            "/aruco/markers",
+            ArucoDetection,
+            "/aruco_detections",
             self.marker_callback,
             10
         )
@@ -52,14 +54,14 @@ class ArucoTraceNode(Node):
             f"ArUco Trace Node started (marker_id={self.marker_id})"
         )
 
-    def marker_callback(self, msg: MarkerArray) -> None:
+    def marker_callback(self, msg: ArucoDetection) -> None:
         """ArUcoマーカー情報のコールバック"""
         self.last_marker_time = self.get_clock().now()
         
-        # id=0のマーカーを探す
+        # marker_idと一致するマーカーを探す
         target_marker = None
         for marker in msg.markers:
-            if marker.id == self.marker_id:
+            if marker.marker_id == self.marker_id:
                 target_marker = marker
                 break
         
@@ -68,49 +70,42 @@ class ArucoTraceNode(Node):
             self.stop_robot()
             return
         
-        # マーカーの中心座標を計算
-        corners = target_marker.corners.data
-        if len(corners) < 4:
-            self.stop_robot()
-            return
+        # マーカーの位置情報から3D座標を取得
+        # pose には位置(x, y, z)と回転(quaternion)が含まれる
+        pose = target_marker.pose
         
-        # 4つのコーナーから中心を計算
-        center_x = sum(corners[i].x for i in range(4)) / 4.0
-        center_y = sum(corners[i].y for i in range(4)) / 4.0
-        
-        # カメラ画像の中心（仮定：解像度 640x480）
-        image_center_x = 320.0
-        image_center_y = 240.0
-        
-        # 画像中心からのオフセット
-        offset_x = center_x - image_center_x
-        offset_y = center_y - image_center_y
+        # カメラ座標系での位置
+        # x: 右方向, y: 下方向, z: カメラ前方向
+        marker_x = pose.position.x
+        marker_y = pose.position.y
+        marker_z = pose.position.z
         
         self.get_logger().debug(
-            f"Marker id={target_marker.id} at ({center_x:.1f}, {center_y:.1f})"
+            f"Marker id={target_marker.marker_id} at ({marker_x:.3f}, {marker_y:.3f}, {marker_z:.3f})"
         )
         
         # 速度指令を計算
         twist = Twist()
         
-        # X方向のオフセット（回転制御）
-        if abs(offset_x) > self.center_threshold:
-            # マーカーが中心より左にある場合は左回転
-            twist.angular.z = self.angular_speed if offset_x > 0 else -self.angular_speed
+        # X軸方向のオフセット（回転制御）
+        # marker_xが0に近いほど中心に位置している
+        if abs(marker_x) > 0.05:  # 中心からのずれが大きい場合
+            # マーカーが右にある場合は左に回転（正の角速度は右旋回）
+            twist.angular.z = -self.angular_speed if marker_x > 0 else self.angular_speed
         else:
-            # マーカーが中心近くにある場合は直進
+            # マーカーが中心近くにある場合は回転しない
             twist.angular.z = 0.0
         
-        # Y方向のオフセット（前進・後進制御）
-        # Y座標が小さい（画像上部）ほど遠い、大きい（画像下部）ほど近い
-        if center_y < image_center_y:
-            # マーカーが画像上部（遠い）→前進
+        # Z軸方向（前進・後進制御）
+        # marker_zが大きいほど遠い、小さいほど近い（30cm=1.0、170cm=5.0）
+        if marker_z < self.distance_threshold - self.distance_tolerance:
+            # マーカーが近い→後退
+            twist.linear.x = -self.linear_speed
+        elif marker_z > self.distance_threshold + self.distance_tolerance:
+            # マーカーが遠い→前進
             twist.linear.x = self.linear_speed
-        elif center_y > image_center_y + self.center_threshold:
-            # マーカーが画像下部（近い）→後退
-            twist.linear.x = -self.linear_speed * 0.5
         else:
-            # マーカーが画像中央付近→停止
+            # マーカーが適切な距離→停止
             twist.linear.x = 0.0
         
         # 速度指令を発行
