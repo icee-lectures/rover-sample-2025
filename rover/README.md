@@ -9,12 +9,22 @@
   - Orbbec Astra Pro Plus
     - 深度が要らなければ普通のWebカメラでも動作可能
 
-## クイックスタート
+## クイックガイド
 
-1. 依存パッケージをインストール
-2. `rover_ws` をビルド
-3. `rosenv_default.sh` を `rosenv.sh` にコピーして環境変数を設定
-4. Discovery Server（必要時）→ Rover ノードを起動
+### インストール
+
+1. 依存パッケージ等をインストール: `sudo ~/rover-sample-2025/rover/install_dependency.sh` など
+2. `rover_ws` をビルド: `cd ~/rover-sample-2025/rover/rover_ws && colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release`
+3. ROS2環境変数を設定: `rosenv_default.sh` を `rosenv.sh` にコピーして編集
+4. 自動起動設定: `~/rover-sample-2025/rover/install_rover_service.sh`
+
+### 通常使用
+
+自動起動設定をしている場合は電源ONで自動起動します
+
+#### 実行中のシェルでROS2を読み込む場合
+
+ROS2読込スクリプトを実行: `source ~/rover-sample-2025/rover/start_ROS.sh`
 
 ## ディレクトリ・ファイルの説明
 
@@ -77,44 +87,25 @@ cd rover/src
 入手直後はスクリプトに実行権限が付いていない場合があります
 
 ```bash
-cd rover
-chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh
+cd ~/rover-sample-2025/rover
+chmod +x rover.sh ros-discovery.sh install_rover_service.sh install_discovery_service.sh install_dependency.sh
 ```
 
 ### 依存パッケージのインストール
 
+`install_dependency.sh` を実行するか、手動で必要なパッケージをインストールしてください
+
 ```bash
-# ROS 2 Jazzy がインストールされていることを確認
-sudo apt update
-sudo apt install ros-jazzy-desktop
-
-# Fast-DDS Discovery Server
-sudo apt install ros-jazzy-rmw-fastrtps-cpp
-
-# カメラ関連
-sudo apt install ros-jazzy-aruco-msgs ros-jazzy-backward-ros ros-jazzy-camera-info-manager \
-                 ros-jazzy-compressed-image-transport ros-jazzy-cv-bridge \
-                 ros-jazzy-diagnostic-msgs ros-jazzy-diagnostic-updater \
-                 ros-jazzy-image-publisher ros-jazzy-image-transport ros-jazzy-image-transport-plugins \
-                 ros-jazzy-topic-tools \
-                 ros-jazzy-ffmpeg-image-transport \
-                 ros-jazzy-ffmpeg-image-transport-tools \
-                 ros-jazzy-statistics-msgs \
-                 libdw-dev libgflags-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev \
-                 libopencv-dev nlohmann-json3-dev
-
-# OrbbecSDKの入手とインストール
-cd ~
-wget https://github.com/orbbec/OrbbecSDK/releases/download/v1.10.18/OrbbecSDK_v1.10.18_arm64.deb
-sudo dpkg -i OrbbecSDK_v1.10.18_arm64.deb
+cd ~/rover-sample-2025/rover
+sudo ./install_dependency.sh
 ```
 
-#### Orbbec カメラの udev ルール設定
+### Orbbec カメラの udev ルール設定
 
 カメラを認識させるために udev ルールを導入してください
 
 ```bash
-cd rover/rover_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
+cd ~/rover-sample-2025/rover/rover_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
 sudo bash install_udev_rules.sh
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
@@ -125,7 +116,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ```bash
 # ビルドするワークスペースへ移動
-cd rover_ws
+cd ~/rover-sample-2025/rover/rover_ws
 
 # ワークスペースのビルド
 # --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
@@ -138,6 +129,9 @@ colcon build --event-handlers  console_direct+  --cmake-args -DCMAKE_BUILD_TYPE=
 例: camera パッケージのビルド
 
 ```bash
+# ビルドするワークスペースへ移動
+cd ~/rover-sample-2025/rover/rover_ws
+
 # 普通のビルド
 colcon build --event-handlers  console_direct+ --packages-select camera
 
@@ -151,7 +145,7 @@ colcon build --event-handlers  console_direct+ --packages-select camera --cmake-
 `rosenv_default.sh`  をコピーして名前を `rosenv.sh` にしてください
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/rover
 # rosenv_default.shをコピーしてrosenv.shを作る
 cp rosenv_default.sh rosenv.sh
 ```
@@ -169,24 +163,18 @@ export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery 
 - `ROS_DOMAIN_ID`: ローバー側とリモート側で同じ値にしてください
 - Discovery Serverを使わない場合は `RMW_IMPLEMENTATION`, `ROS_DISCOVERY_SERVER`, `ROS_SUPER_CLIENT` をコメントアウト
 
-### systemd サービスの登録（オプション）
+### systemd サービスの登録
 
-- システム起動時に自動的にノードを起動したい場合に設定してください
-- 設定する場合はDiscovery ServerサービスとRoverノードサービスを両方有効化してください
-  - 起動順序設定がされているため
+起動順序設定がされているため，Discovery Server を使わない場合も Discovery Server サービスとRover サービスを両方有効化してください
 
 ```bash
-# Discovery Server サービスの登録
+# サービスの登録
+./install_rover_service.sh
 ./install_discovery_service.sh
 
-# Rover ノードサービスの登録
-./install_rover_service.sh
-
-# サービスの有効化と起動
-systemctl --user enable ros-discovery.service
+# サービスの有効化
 systemctl --user enable rover.service
-systemctl --user start ros-discovery.service
-systemctl --user start rover.service
+systemctl --user enable ros-discovery.service
 
 # systemdのユーザーモードが未ログインでも自動起動する設定
 loginctl enable-linger $(whoami)
@@ -195,29 +183,13 @@ loginctl enable-linger $(whoami)
 サービスを削除する場合：
 
 ```bash
-./install_discovery_service.sh --remove
 ./install_rover_service.sh --remove
+./install_discovery_service.sh --remove
 ```
 
 ## 使用方法
 
-### 手動起動
-
-#### 1. Discovery Server の起動
-
-```bash
-./ros-discovery.sh
-```
-
-#### 2. Rover ノードの起動
-
-```bash
-./rover.sh
-```
-
-### systemd サービス経由での起動
-
-サービスを登録済みの場合：
+電源を投入すると自動起動します
 
 ```bash
 # 起動
@@ -239,48 +211,105 @@ systemctl --user stop ros-discovery.service
 
 ## トピック
 
-### パブリッシュするトピック
+### 主要なトピックの仕様
+
+#### /cmd_vel
+
+geometry_msgs/msg/Twist
+
+ローバーの移動を制御するトピック
+
+- `linear.x`: ローバーの前進・後退 (-1.0 - 1.0)
+  - 正数: 前進, 負数: 後退
+- `angular.z`: ローバーの旋回 (-5.0 - 5.0)
+  - 正数: 右旋回, 負数: 左旋回
+
+#### /camera/*
+
+カメラ画像データ
+
+- `/camera/color/*`: カラーカメラ画像
+  - `/camera/color/image_raw`: カラーカメラの生画像
+  - `/camera/color/image_raw/compressed`: カラーカメラの圧縮画像
+    - `/camera/color/image_raw` はとても重たいので、リモートで使う場合はこちらか `/camera_fallback/color/image_raw/compressed` (後述) を使用する
+- `/camera/depth/*`: 深度センサ画像
+  - 測定原理上、屋外の利用は難しいかもしれない
+
+#### /camera_fallback/color/image_raw/compressed
+
+sensor_msgs/msg/CompressedImage
+
+`/camera/color/image_raw` を低ビットレート化したもの
+
+- LTE回線越しなど、`/camera/color/image_raw/compressed` でも重たい場合に使用する
+- 人による遠隔確認や操縦用（画質が悪いので画像認識には不向き）
+
+#### /aruco_detections
+
+aruco_opencv_msgs/msg/ArucoDetection
+
+`/camera/color/image_raw` から検出されたArUcoマーカーの情報
+
+- `markers[].maker_id`: 検出されたマーカーのID
+- `markers[].pose`: 検出されたマーカーの座標
+  - `x`: マーカーが左右中央: 0.0, 中央から左側: 負数 中央から右側: 正数
+    - <参考> 距離:1m, マーカーサイズ:5cm のとき
+      - 右端: 約1.7
+      - 左端: 約-1.7
+  - `y`: マーカーが上下中央: 0.0, 中央から上側: 負数 中央から左側: 正数
+    - <参考> 距離:1m, マーカーサイズ:5cm のとき
+      - 上端: 約-1.2
+      - 下端(地面): 約1.0
+  - `z`: カメラからマーカーの距離
+    - <参考> マーカーサイズ:5cm のとき
+      - 30cm: 約1.0
+      - 170cm: 約5.0
+
+### トピック一覧
+
+#### パブリッシュするトピック
 
 | トピック名 | 型 | 説明 |
 | --- | --- | --- |
-| `/aruco/markers` | `aruco_msgs/msg/MarkerArray` | 検出されたArUcoマーカーの情報 |
-| `/aruco/debug/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | ArUco検出デバッグ画像（圧縮） |
+| `/aruco_detections` | `aruco_opencv_msgs/msg/ArucoDetection` | 検出されたArUcoマーカーの情報 |
+| `/aruco_tracker_autostart/debug` | `sensor_msgs/msg/Image` | ArUcoトラッカーのデバッグ画像 |
+| `/aruco_tracker_autostart/transition_event` | `lifecycle_msgs/msg/TransitionEvent` | ArUcoトラッカーのライフサイクル遷移イベント |
+| `/camera/color/camera_info` | `sensor_msgs/msg/CameraInfo` | カラーカメラのキャリブレーション情報 |
 | `/camera/color/image_raw` | `sensor_msgs/msg/Image` | カラーカメラの生画像 |
 | `/camera/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮画像 |
 | `/camera/color/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮深度画像 |
 | `/camera/color/image_raw/theora` | `theora_image_transport/msg/Packet` | カラーカメラのTheora圧縮画像 |
-| `/camera/color/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | カラーカメラのZstd圧縮画像 |
-| `/camera/color/camera_info` | `sensor_msgs/msg/CameraInfo` | カラーカメラのキャリブレーション情報 |
+| `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
 | `/camera/depth/image_raw` | `sensor_msgs/msg/Image` | 深度カメラの生画像 |
 | `/camera/depth/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮画像 |
 | `/camera/depth/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮深度画像 |
 | `/camera/depth/image_raw/theora` | `theora_image_transport/msg/Packet` | 深度カメラのTheora圧縮画像 |
-| `/camera/depth/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 深度カメラのZstd圧縮画像 |
-| `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
 | `/camera/depth/points` | `sensor_msgs/msg/PointCloud2` | 深度カメラのポイントクラウド |
 | `/camera/depth_filter_status` | `std_msgs/msg/String` | 深度フィルターの状態 |
 | `/camera/depth_to_color` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・カラーカメラ間の変換行列 |
-| `/camera/depth_to_ir` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・赤外線カメラ間の変換行列 |
+| `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
 | `/camera/ir/image_raw` | `sensor_msgs/msg/Image` | 赤外線カメラの生画像 |
 | `/camera/ir/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮画像 |
 | `/camera/ir/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮深度画像 |
 | `/camera/ir/image_raw/theora` | `theora_image_transport/msg/Packet` | 赤外線カメラのTheora圧縮画像 |
-| `/camera/ir/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラのZstd圧縮画像 |
-| `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
 | `/camera_fallback/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 低ビットレートカラー画像（圧縮） |
+| `/diagnostics` | `diagnostic_msgs/msg/DiagnosticArray` | カメラ等の診断情報 |
+| `/edition` | `std_msgs/msg/Float32` | Yahboom基板のファームウェア版数 |
 | `/imu/data_raw` | `sensor_msgs/msg/Imu` | IMUセンサーのデータ |
 | `/imu/mag` | `sensor_msgs/msg/MagneticField` | 磁気センサーのデータ |
 | `/joint_states` | `sensor_msgs/msg/JointState` | ジョイント（モーター）の状態 |
+| `/parameter_events` | `rcl_interfaces/msg/ParameterEvent` | ノードパラメーターのイベント |
+| `/rosout` | `rcl_interfaces/msg/Log` | ノードログ |
 | `/tf` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（動的） |
 | `/tf_static` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（静的） |
+| `/vel_raw` | `geometry_msgs/msg/Twist` | 生の速度指令（計測値） |
 | `/voltage` | `std_msgs/msg/Float32` | 電源電圧 |
 
-### サブスクライブするトピック
+#### サブスクライブするトピック
 
 | トピック名 | 型 | 説明 |
 | --- | --- | --- |
 | `/cmd_vel` | `geometry_msgs/msg/Twist` | 速度指令（線速度・角速度） |
-| `/vel_raw` | `geometry_msgs/msg/Twist` | 生の速度指令 |
 | `/Buzzer` | `std_msgs/msg/Bool` | ブザー制御（True: 鳴動、False: 停止） |
 | `/RGBLight` | `std_msgs/msg/Int32` | RGB LED制御 |
 | `/pwmservo` | `std_msgs/msg/Float32MultiArray` | PWM サーボ制御 (4ch) |

@@ -6,12 +6,19 @@
 - ゲームコントローラ利用時は物理マシンでの実行を推奨（仮想環境では認識しない場合あり）
 - キーボード入力は pygame でウィンドウを開くためディスプレイ環境が必要
 
-## クイックスタート
+## クイックガイド
 
-1. 依存パッケージをインストール
-2. `remote_ws` をビルド
-3. `rosenv_default.sh` を `rosenv.sh` にコピーして必要に応じて編集
-4. ゲームパッド（またはキーボード）ノードを起動
+### インストール
+
+1. 依存パッケージ等をインストール: `sudo ~/rover-sample-2025/remote/install_dependency.sh` など
+2. `rover_ws` をビルド: `cd ~/rover-sample-2025/remote/rover_ws && colcon build --event-handlers console_direct+`
+3. ROS2環境変数を設定: `rosenv_default.sh` を `rosenv.sh` にコピーして編集
+
+### 通常使用
+
+#### 実行中のシェルでROS2を読み込む場合
+
+ROS2読込スクリプトを実行: `source ~/rover-sample-2025/rover/start_ROS.sh`
 
 ## ディレクトリ・ファイルの説明
 
@@ -52,28 +59,24 @@ ROS2ワークスペース
 入手直後はスクリプトに実行権限が付いていない場合があります
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/remote
 chmod +x start_gamepad.sh start_wasd-controller.sh
 ```
 
 ### 依存パッケージのインストール
 
-```bash
-# ROS 2 Jazzy
-sudo apt update
-sudo apt install ros-jazzy-desktop
-sudo apt install ros-jazzy-image-transport ros-jazzy-image-transport-plugins \
-                 ros-jazzy-ffmpeg-image-transport ros-jazzy-ffmpeg-image-transport-tools
+`install_dependency.sh` を実行するか、手動で必要なパッケージをインストールしてください
 
-# pygame（ゲームパッド/キーボード読み取りで使用）
-sudo apt install python3-pygame
+```bash
+cd ~/rover-sample-2025/remote
+sudo ./install_dependency.sh
 ```
 
 ### ワークスペースのビルド
 
 ```bash
 # ビルドするワークスペースへ移動
-cd remote/remote_ws
+cd ~/rover-sample-2025/remote/remote_ws
 
 # ワークスペースのビルド
 # --event-handlers  console_direct+ : ビルド状況の詳細ログを出力します（省略可）
@@ -85,7 +88,7 @@ colcon build --event-handlers console_direct+
 `rosenv_default.sh` をコピーして `rosenv.sh` を作成してください。
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/remote
 cp rosenv_default.sh rosenv.sh
 ```
 
@@ -110,13 +113,13 @@ export ROS_SUPER_CLIENT=TRUE # スーパークライアント設定（Discovery 
 ### ゲームコントローラの起動
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/remote
 ./start_gamepad.sh
 ```
 
 ### キーボード（WASD）の起動
 
 ```bash
-cd remote
+cd ~/rover-sample-2025/remote
 ./start_wasd-controller.sh
 ```

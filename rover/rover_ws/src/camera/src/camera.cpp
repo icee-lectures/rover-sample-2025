@@ -16,7 +16,7 @@ public:
         std::string camera_name = this->declare_parameter<std::string>("camera_name", "camera");
         std::string output_topic = camera_name + "/color/image_raw/compressed";
 
-        // ★ 通信安定性重視のQoS設定
+        // 通信安定性重視のQoS設定
         // - BEST_EFFORT: 再送しない（フレーム落としてOK）
         // - VOLATILE: 過去データを保持しない
         // - Keep Last(1): 常に最新の1フレームのみ
@@ -27,8 +27,8 @@ public:
         pub_compressed_ = this->create_publisher<sensor_msgs::msg::CompressedImage>(
             output_topic, qos);
 
-        // ★ JPEGをデコードせず直接配信（CPU使用率最小化）
-        // ★ leaky=downstream で古いフレームを破棄、常に最新を転送
+        // Webカメラから送られるMJPGをデコードせず直接配信（CPU使用率最小化）
+        // leaky=downstream で古いフレームを破棄、常に最新を転送
         std::string pipeline_desc =
             "v4l2src device=" + video_device + " io-mode=4 ! "
             "image/jpeg,width=1280,height=720,framerate=30/1 ! "
