@@ -211,7 +211,63 @@ systemctl --user stop ros-discovery.service
 
 ## トピック
 
-### パブリッシュするトピック
+### 主要なトピックの仕様
+
+#### /cmd_vel
+
+geometry_msgs/msg/Twist
+
+ローバーの移動を制御するトピック
+
+- `linear.x`: ローバーの前進・後退 (-1.0 - 1.0)
+  - 正数: 前進, 負数: 後退
+- `angular.z`: ローバーの旋回 (-5.0 - 5.0)
+  - 正数: 右旋回, 負数: 左旋回
+
+#### /camera/*
+
+カメラ画像データ
+
+- `/camera/color/*`: カラーカメラ画像
+  - `/camera/color/image_raw`: カラーカメラの生画像
+  - `/camera/color/image_raw/compressed`: カラーカメラの圧縮画像
+    - `/camera/color/image_raw` はとても重たいので、リモートで使う場合はこちらか `/camera_fallback/color/image_raw/compressed` (後述) を使用する
+- `/camera/depth/*`: 深度センサ画像
+  - 測定原理上、屋外の利用は難しいかもしれない
+
+#### /camera_fallback/color/image_raw/compressed
+
+sensor_msgs/msg/CompressedImage
+
+`/camera/color/image_raw` を低ビットレート化したもの
+
+- LTE回線越しなど、`/camera/color/image_raw/compressed` でも重たい場合に使用する
+- 人による遠隔確認や操縦用（画質が悪いので画像認識には不向き）
+
+#### /aruco_detections
+
+aruco_opencv_msgs/msg/ArucoDetection
+
+`/camera/color/image_raw` から検出されたArUcoマーカーの情報
+
+- `markers[].maker_id`: 検出されたマーカーのID
+- `markers[].pose`: 検出されたマーカーの座標
+  - `x`: マーカーが左右中央: 0.0, 中央から左側: 負数 中央から右側: 正数
+    - <参考> 距離:1m, マーカーサイズ:5cm のとき
+      - 右端: 約1.7
+      - 左端: 約-1.7
+  - `y`: マーカーが上下中央: 0.0, 中央から上側: 負数 中央から左側: 正数
+    - <参考> 距離:1m, マーカーサイズ:5cm のとき
+      - 上端: 約-1.2
+      - 下端(地面): 約1.0
+  - `z`: カメラからマーカーの距離
+    - <参考> マーカーサイズ:5cm のとき
+      - 30cm: 約1.0
+      - 170cm: 約5.0
+
+### トピック一覧
+
+#### パブリッシュするトピック
 
 | トピック名 | 型 | 説明 |
 | --- | --- | --- |
@@ -222,27 +278,20 @@ systemctl --user stop ros-discovery.service
 | `/camera/color/image_raw` | `sensor_msgs/msg/Image` | カラーカメラの生画像 |
 | `/camera/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮画像 |
 | `/camera/color/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | カラーカメラの圧縮深度画像 |
-| `/camera/color/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | カラーカメラのFFmpeg圧縮画像 |
 | `/camera/color/image_raw/theora` | `theora_image_transport/msg/Packet` | カラーカメラのTheora圧縮画像 |
-| `/camera/color/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | カラーカメラのZstd圧縮画像 |
 | `/camera/depth/camera_info` | `sensor_msgs/msg/CameraInfo` | 深度カメラのキャリブレーション情報 |
 | `/camera/depth/image_raw` | `sensor_msgs/msg/Image` | 深度カメラの生画像 |
 | `/camera/depth/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮画像 |
 | `/camera/depth/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 深度カメラの圧縮深度画像 |
-| `/camera/depth/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | 深度カメラのFFmpeg圧縮画像 |
 | `/camera/depth/image_raw/theora` | `theora_image_transport/msg/Packet` | 深度カメラのTheora圧縮画像 |
-| `/camera/depth/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 深度カメラのZstd圧縮画像 |
 | `/camera/depth/points` | `sensor_msgs/msg/PointCloud2` | 深度カメラのポイントクラウド |
 | `/camera/depth_filter_status` | `std_msgs/msg/String` | 深度フィルターの状態 |
 | `/camera/depth_to_color` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・カラーカメラ間の変換行列 |
-| `/camera/depth_to_ir` | `orbbec_camera_msgs/msg/Extrinsics` | 深度・赤外線カメラ間の変換行列 |
 | `/camera/ir/camera_info` | `sensor_msgs/msg/CameraInfo` | 赤外線カメラのキャリブレーション情報 |
 | `/camera/ir/image_raw` | `sensor_msgs/msg/Image` | 赤外線カメラの生画像 |
 | `/camera/ir/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮画像 |
 | `/camera/ir/image_raw/compressedDepth` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラの圧縮深度画像 |
-| `/camera/ir/image_raw/ffmpeg` | `ffmpeg_image_transport_msgs/msg/FFMPEGPacket` | 赤外線カメラのFFmpeg圧縮画像 |
 | `/camera/ir/image_raw/theora` | `theora_image_transport/msg/Packet` | 赤外線カメラのTheora圧縮画像 |
-| `/camera/ir/image_raw/zstd` | `sensor_msgs/msg/CompressedImage` | 赤外線カメラのZstd圧縮画像 |
 | `/camera_fallback/color/image_raw/compressed` | `sensor_msgs/msg/CompressedImage` | 低ビットレートカラー画像（圧縮） |
 | `/diagnostics` | `diagnostic_msgs/msg/DiagnosticArray` | カメラ等の診断情報 |
 | `/edition` | `std_msgs/msg/Float32` | Yahboom基板のファームウェア版数 |
@@ -253,14 +302,14 @@ systemctl --user stop ros-discovery.service
 | `/rosout` | `rcl_interfaces/msg/Log` | ノードログ |
 | `/tf` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（動的） |
 | `/tf_static` | `tf2_msgs/msg/TFMessage` | トランスフォーム情報（静的） |
+| `/vel_raw` | `geometry_msgs/msg/Twist` | 生の速度指令（計測値） |
 | `/voltage` | `std_msgs/msg/Float32` | 電源電圧 |
 
-### サブスクライブするトピック
+#### サブスクライブするトピック
 
 | トピック名 | 型 | 説明 |
 | --- | --- | --- |
 | `/cmd_vel` | `geometry_msgs/msg/Twist` | 速度指令（線速度・角速度） |
-| `/vel_raw` | `geometry_msgs/msg/Twist` | 生の速度指令 |
 | `/Buzzer` | `std_msgs/msg/Bool` | ブザー制御（True: 鳴動、False: 停止） |
 | `/RGBLight` | `std_msgs/msg/Int32` | RGB LED制御 |
 | `/pwmservo` | `std_msgs/msg/Float32MultiArray` | PWM サーボ制御 (4ch) |
